@@ -3,12 +3,12 @@ import {User} from '../models/user'
 import fs from 'fs';
 
 //Array for storing data 
-const Users:User[]=[];
+let Users:User[]=[];
 
 
 
 //Data stored on server side in JSON file
-    fs.readFile('./data.json',(err,data)=>
+    /*fs.readFile('./data.json',(err,data)=>
     {
         if(err)
         {
@@ -23,20 +23,30 @@ const Users:User[]=[];
             }
         }
     });
-
+*/
 
 // Get request to fetch data
 
     export const getUser: RequestHandler = (req, res,next) => {
-        res.render('table', {data: Users});
+        
+        User.allData(function(data:any){
+            Users=data
+            res.json(Users)
+        })
+        //res.render('table', {data: Users});
     }
 
 //Updating user
-    export const updateUser: RequestHandler<{id:string}>= (req,res,next)=>
+   export const updateUser: RequestHandler<{id:string}>= (req,res,next)=>
     {
         const userID=req.params.id;
+        console.log(Users[0].id )
+        console.log(userID)
 
-        const userIndex = Users.findIndex(user => user.id === userID)
+
+
+
+         const userIndex = Users.findIndex(user => user.id == userID)
         
         if (userIndex < 0) {
             throw new Error("Could not find user!!")
@@ -44,19 +54,17 @@ const Users:User[]=[];
 
         
 
-        const updated_firstName = (req.body.firstName === undefined) ? Users[userIndex].firstname : req.body.firstName 
-        const updated_middleName = (req.body.middleName=== undefined) ? Users[userIndex].middlename : req.body.middleName
-        const updated_lastName = (req.body.lastName=== undefined) ? Users[userIndex].lastname : req.body.lastName
+        const updated_firstName = (req.body.firstname === undefined) ? Users[userIndex].firstname : req.body.firstname 
+        const updated_middleName = (req.body.middlename=== undefined) ? Users[userIndex].middlename : req.body.middlename
+        const updated_lastName = (req.body.lastname=== undefined) ? Users[userIndex].lastname : req.body.lastname
         const updated_email = (req.body.email=== undefined) ? Users[userIndex].email : req.body.email
-        const updated_phoneNumber = (req.body.phoneNumber=== undefined) ? Users[userIndex].phone_number: req.body.phoneNumber
+        const updated_phoneNumber = (req.body.phonenumber=== undefined) ? Users[userIndex].phone_number: req.body.phonenumber
         const updated_role = (req.body.role=== undefined) ? Users[userIndex].role : req.body.role
         const updated_address = (req.body.address=== undefined) ? Users[userIndex].address : req.body.address
-        console.log(updated_middleName)
-        console.log(updated_lastName)
-        console.log(updated_phoneNumber)
+        
 
           Users[userIndex] = new User(Users[userIndex].id, updated_firstName, updated_middleName, updated_lastName, updated_email, updated_phoneNumber, updated_role, updated_address)
-                             res.json({ message: "updated", updatedUser: Users[userIndex] });
+                             res.json(Users[userIndex]);
                              
 
     }
@@ -66,8 +74,9 @@ const Users:User[]=[];
     {
         console.log("function called");
         const userID = req.params.id;
-        console.log(userID);
-        const userIndex = Users.findIndex(user => user.id === userID)
+        console.log(typeof userID);
+        console.log(typeof Users[0].id)
+        const userIndex = Users.findIndex(item => item.id ==userID)
         if (userIndex < 0) 
         {
             throw new Error("could not find user!");

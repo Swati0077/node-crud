@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 
 app.set("view engine", "ejs");
 app.set("views", "src/views");
-console.log(path.join(__dirname , "../" , "public"));
+//console.log(path.join(__dirname , "../" , "public"));
 app.use(express.static(path.join(__dirname , "../" , "public")));
 
 app.use('/user',userRoutes);
@@ -21,7 +21,8 @@ app.use('/', (req,res,next) => {
 
 
 //For handling error 
-app.use((err:Error ,req:Request,res:Response,next:NextFunction)=>{
+/*app.use((err:Error ,req:Request,res:Response,next:NextFunction)=>{
 res.status(500).json({message:err.message});
-});
+});*/
 app.listen(3000);
+

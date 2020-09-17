@@ -1,5 +1,6 @@
 // for configuring routes
 import {Router} from 'express';
+//import {getUser} from '../controller/users'
 import {getUser,updateUser,deleteUser} from '../controller/users'
 
 
