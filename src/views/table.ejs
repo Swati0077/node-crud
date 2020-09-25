@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USER DATA</title>
+    
+    <link  href="app.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+    <% if(path === "/") { %>
+        <a href="/user"><button  id="btn">LOAD DATA</button></a> 
+    <% } else { %>
+        <a href="/user"><button  id="btn">REFRESH</button></a> 
+    <% } %>
+
+   <% if(data.length > 0) { %>
+        <table id="mytable" border=1 >
+            <tr>
+                <th>First Name</th>
+                <th>Middle Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Role</th>
+                <th>Address</th>
+                <th>Created on</th>
+                <th>Modified on</th>
+                <th>Edit</th>
+            </tr>
+            <% for (let i=0;i < data.length;i++)  { %>
+                <tr id="row-<%= data[i].id %>">
+                    <td><%= data[i].firstname %></td>
+                    <td><%= data[i].middlename%></td>
+                    <td><%= data[i].lastname%></td>
+                    <td><%= data[i].email%></td>
+                    <td><%= data[i].phonenumber %></td>
+                    <td><%= data[i].role %></td>
+                    <td><%= data[i].address %></td>
+                    <td><%= data[i].created_on %></td>
+                    <td><%= data[i].modified_on %></td>
+                    <td>
+                        <button id="edit-<%= data[i].id %>" onclick="editRow(id)"> Edit </button>
+                        <button id="del-<%= data[i].id %>" onclick="deleteRow(this.id)">Delete</button>
+                        <button id="save-<%= data[i].id %>" style="display: none;" onclick="saveRow(this.id)">Save</button>
+                        <button id="cancel-<%= data[i].id %>" style="display: none;" onclick="cancelRow(this.id)">Cancel</button>
+                    </td>
+                </tr>
+            <% } %>
+        </table>
+    <% } %>  
+    <div id="userData" data-user="<%= JSON.stringify(data) %>"></div>
+
+    <script > 
+    
+  const user_data = JSON.parse(document.getElementById('userData').getAttribute("data-user"));
+
+function saveRow(row_id) {
+    row_id = row_id.split('-')[1];
+    let row=document.getElementById('row-'+row_id);
+    let cells = row.querySelectorAll("td");
+    
+    for (var i = 0; i < 7; i++) {
+        cells[i].setAttribute("contenteditable", "false");
+    }
+
+    var d = new Date();
+    cells[8].textContent = d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()+' '+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() + ' GMT+0530 (India Standard Time)';
+    
+    updatedRow = {
+        firstname: cells[0].textContent,
+        middlename: cells[1].textContent,
+        lastname: cells[2].textContent,
+        email: cells[3].textContent,
+        phonenumber: cells[4].textContent,
+        role: cells[5].textContent,
+        address: cells[6].textContent,
+        created_on: cells[7].textContent,
+        modified_on: cells[8].textContent
+    };
+
+
+    let xhr = new XMLHttpRequest();
+    xhr.open("PATCH", '/user/edit/'+row_id);
+  xhr.setRequestHeader("content-type","application/json");
+  xhr.send(JSON.stringify(updatedRow));
+   
+    document.getElementById("edit-"+row_id).style.display = "inline";
+    document.getElementById("del-"+row_id).style.display = "inline";
+    document.getElementById("save-"+row_id).style.display = "none";
+    document.getElementById("cancel-"+row_id).style.display = "none";
+
+ 
+}
+
+function editRow(row_id) {
+    row_id = row_id.split('-')[1];
+    //getting row by its id
+    let row = document.getElementById("row-"+row_id);
+    
+    
+    let cells = row.querySelectorAll("td");
+    for (var i = 0; i <7; i++) {
+        cells[i].setAttribute("contenteditable", "true");
+    }
+    cells[0].focus();
+    //make save and cancel buttons' display = block, and edit delete = none
+    document.getElementById("edit-"+row_id).style.display = "none";
+    document.getElementById("del-"+row_id).style.display = "none";
+    document.getElementById("save-"+row_id).style.display = "inline";
+    document.getElementById("cancel-"+row_id).style.display = "inline";
+}
+
+function cancelRow(row_id) {
+    row_id = row_id.split('-')[1];
+    let row=document.getElementById('row-'+row_id);
+    let cells = row.querySelectorAll("td");
+    
+    for (var i = 0; i < 7; i++) {
+        cells[i].setAttribute("contenteditable", "false");
+    }
+
+    let userIndex;
+    for(let i=0;i<user_data.length;i++) if(user_data[i].id == row_id) {userIndex = i; break;}
+
+    cells[0].textContent = user_data[userIndex].firstname;
+    cells[1].textContent = user_data[userIndex].middlename;
+    cells[2].textContent = user_data[userIndex].lastname;
+    cells[3].textContent = user_data[userIndex].email;
+    cells[4].textContent = user_data[userIndex].phonenumber;
+    cells[5].textContent = user_data[userIndex].role;
+    cells[6].textContent = user_data[userIndex].address;
+
+    document.getElementById("edit-"+row_id).style.display = "inline";
+    document.getElementById("del-"+row_id).style.display = "inline";
+    document.getElementById("save-"+row_id).style.display = "none";
+    document.getElementById("cancel-"+row_id).style.display = "none";
+}
+
+function deleteRow(row_id) {
+    row_id = row_id.split('-')[1];
+    let row=document.getElementById('row-'+row_id);
+    row.innerHTML = '';
+
+    let xhr = new XMLHttpRequest();
+    xhr.open("DELETE", '/user/delete/'+row_id);
+    xhr.send();
+    xhr.onload = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            //document.getElementById("demo").innerHTML = this.responseText;
+            
+        
+        }
+    };
+  
+}
+    </script>
+       
+     
+   
+
+
+</body>
+</html>
